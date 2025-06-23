@@ -1,0 +1,8 @@
+items int ;
+codigo int ;
+total int ;
+
+if codigo == items then
+    total := total + total
+else
+    print total + total
