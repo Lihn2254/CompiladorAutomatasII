@@ -11,10 +11,10 @@ public class Parser {
     String[] tipo = null;
     String[] variable;
     String byteString;
-    private Vector tablaSimbolos = new Vector();
+    private Vector<Declarax> tablaSimbolos = new Vector<Declarax>();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8, igual=9, igualdad=10, intx=11, floatx=12, id=13;
+            sum=8, igual=9, igualdad=10, intx=11, floatx=12, doublex=13, id=14;
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -70,7 +70,7 @@ public class Parser {
     
     public Declarax D() {
       if(tknCode == id) {
-        if(stringToCode(s.getToken(false)) == intx || stringToCode(s.getToken(false)) == floatx) {
+        if(stringToCode(s.getToken(false)) == intx || stringToCode(s.getToken(false)) == floatx || stringToCode(s.getToken(false)) == doublex) {
           String s = token;
           eat(id); Typex t = T(); eat(semi); D();
           tablaSimbolos.addElement(new Declarax(s, t));
@@ -95,8 +95,12 @@ public class Parser {
             eat(floatx);
             return new Typex("float");
         }
+        else if(tknCode == doublex) {
+            eat(doublex);
+            return new Typex("double");
+        }
         else{
-            error(token, "(int / float)");
+            error(token, "(int / float / double)");
             return null;
         }
     }
@@ -224,7 +228,9 @@ public class Parser {
             case "==": codigo=10; break;
             case "int": codigo=11; break;
             case "float": codigo=12; break;
-            default: codigo=13; break;
+            case "double": codigo=13; break; //Se agrega el tipo double
+
+            default: codigo=14; break;
         }
         return codigo;
     }
@@ -301,7 +307,7 @@ public class Parser {
               elementoCompara2 = (Declarax) tablaSimbolos.elementAt(j);
               if(s2.equals(elementoCompara2.s1)) {
                 System.out.println("Se encontró el segundo elemento en la tabla de símbolos...");
-                if(tipo[i].equals(tipo[j])) {
+                if(tipo[i].equals(tipo[j]) || (tipo[i].equals("float") && tipo[j].equals("double")) ||(tipo[i].equals("double") && tipo[j].equals("float"))) {
                   termino = true;
                   break;
                 }else{
