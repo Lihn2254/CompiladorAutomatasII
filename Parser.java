@@ -14,7 +14,7 @@ public class Parser {
     private Vector<Declarax> tablaSimbolos = new Vector<Declarax>();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8, igual=9, igualdad=10, intx=11, floatx=12, doublex=13, longx=14, id=15;
+            sum=8,  rest=9, mult=10, div=11, igual=12, igualdad=13, intx=14, floatx=15, doublex=16, longx=17, id=18;
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -176,6 +176,36 @@ public class Parser {
                    byteCode("suma", comp1, comp2);
                    System.out.println("Operación: " + comp1 + "+" + comp2);
                    return new Sumax(i1, i2);
+
+                case rest:
+                   comp2 = tokenActual;
+                   eat(rest);   eat(id);
+                   i2 = new Idx(comp2);
+                   declarationCheck(comp2);
+                   compatibilityCheck(comp1,comp2);
+                   byteCode("resta", comp1, comp2);
+                   System.out.println("Operación: " + comp1 + "-" + comp2);
+                   return new Restax(i1, i2);
+
+                case mult:
+                   comp2 = tokenActual;
+                   eat(mult);   eat(id);
+                   i2 = new Idx(comp2);
+                   declarationCheck(comp2);
+                   compatibilityCheck(comp1,comp2);
+                   byteCode("multiplicacion", comp1, comp2);
+                   System.out.println("Operación: " + comp1 + "*" + comp2);
+                   return new Multx(i1, i2);
+
+                case div:
+                   comp2 = tokenActual;
+                   eat(div);   eat(id);
+                   i2 = new Idx(comp2);
+                   declarationCheck(comp2);
+                   compatibilityCheck(comp1,comp2);
+                   byteCode("division", comp1, comp2);
+                   System.out.println("Operación: " + comp1 + "/" + comp2);
+                   return new Divx(i1, i2);
                    
                case igualdad:
                    comp2 = tokenActual;
@@ -187,7 +217,7 @@ public class Parser {
                    return new Comparax(i1, i2);
                    
                default: 
-                   error(token, "(+ / ==)");
+                   error(token, "(+ / - / * / / / == )");
                    return null;
            }
        }
@@ -228,14 +258,18 @@ public class Parser {
             case "print": codigo=6; break;
             case ";": codigo=7; break;
             case "+": codigo=8; break;
-            case ":=": codigo=9; break;
-            case "==": codigo=10; break;
-            case "int": codigo=11; break;
-            case "float": codigo=12; break;
-            case "double": codigo=13; break; //Se agrega el tipo double
-            case "long": codigo=14; break; //Se agrega el tipo long
+            case "-": codigo=9; break;
+            case "*": codigo=10; break;
+            case "/": codigo=11; break;
+            case ":=": codigo=12; break;
+            case "==": codigo=13; break;
+            case "int": codigo=14; break;
+            case "float": codigo=15; break;
+            case "double": codigo=16; break; //Se agrega el tipo double
+            case "long": codigo=17; break; //Se agrega el tipo long
+            
 
-            default: codigo=15; break;
+            default: codigo=18; break;
         }
         return codigo;
     }
@@ -360,6 +394,27 @@ public class Parser {
             ipbc(cntIns + ": iload_"+pos1);
             ipbc(cntIns + ": iload_"+pos2);
             ipbc(cntIns + ": iadd");
+            jmp2 = cntBC;
+          break;
+          
+          case "resta":
+            ipbc(cntIns + ": iload_"+pos1);
+            ipbc(cntIns + ": iload_"+pos2);
+            ipbc(cntIns + ": isub");
+            jmp2 = cntBC;
+          break;
+
+          case "multiplicacion":
+            ipbc(cntIns + ": iload_"+pos1);
+            ipbc(cntIns + ": iload_"+pos2);
+            ipbc(cntIns + ": imul");
+            jmp2 = cntBC;
+          break;
+
+          case "division":
+            ipbc(cntIns + ": iload_"+pos1);
+            ipbc(cntIns + ": iload_"+pos2);
+            ipbc(cntIns + ": idiv");
             jmp2 = cntBC;
           break;
         }
