@@ -14,7 +14,8 @@ public class Parser {
     private Vector<Declarax> tablaSimbolos = new Vector<Declarax>();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8,  rest=9, mult=10, div=11, igual=12, igualdad=13, intx=14, floatx=15, doublex=16, longx=17, id=18;
+            sum=8,  rest=9, mult=10, div=11, igual=12, igualdad=13, intx=14, floatx=15, doublex=16, longx=17, whilex = 18, dox = 19, id=20;
+    private final String [] reservadas = {"if", "then", "else", "begin", "end", "print", ";", "+", "-", "*", "/", "=", "==", "int", "float", "double", "long", "while", "do", "id"};
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -56,7 +57,7 @@ public class Parser {
             advance();
         }
         else{
-            error(token, "token tipo:"+t);
+            error(token, "token:(" + reservadas[t-1] + ")");
         }
     }
     
@@ -121,8 +122,16 @@ public class Parser {
                 eat(elsex);
                 s2=S();                
                 return new Ifx(e1, s1, s2);
-
                 
+            case whilex:
+                Expx e2;
+                Statx s3;
+                eat(whilex);
+                e2 = E();
+                eat(dox);
+                s3 = S();          
+                return new Whilex(e2, s3);
+
             case beginx:
                 eat(beginx);    S();    L();
                 return null;
@@ -267,9 +276,10 @@ public class Parser {
             case "float": codigo=15; break;
             case "double": codigo=16; break; //Se agrega el tipo double
             case "long": codigo=17; break; //Se agrega el tipo long
-            
+            case "while": codigo=18; break; //Nueva palabra reservada while
+            case "do": codigo=19; break; //Nueva palabra reservada do
 
-            default: codigo=18; break;
+            default: codigo=20; break;
         }
         return codigo;
     }

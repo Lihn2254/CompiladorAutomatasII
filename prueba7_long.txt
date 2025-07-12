@@ -4,7 +4,7 @@ total long ;
 if iva == total then
 	print total + iva
 else
-   print iva + total ;
+   print iva + total
 
 print iva + total 
 

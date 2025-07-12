@@ -1,0 +1,6 @@
+items int ;
+codigo int ;
+total int ;
+
+while codigo == items do
+    total := total + total
