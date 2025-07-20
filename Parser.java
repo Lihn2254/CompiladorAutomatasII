@@ -14,8 +14,8 @@ public class Parser {
     private Vector<Declarax> tablaSimbolos = new Vector<Declarax>();
     private final Scanner s;
     final int ifx=1, thenx=2, elsex=3, beginx=4, endx=5, printx=6, semi=7,
-            sum=8,  rest=9, mult=10, div=11, igual=12, igualdad=13, intx=14, floatx=15, doublex=16, longx=17, whilex = 18, dox = 19, id=20;
-    private final String [] reservadas = {"if", "then", "else", "begin", "end", "print", ";", "+", "-", "*", "/", "=", "==", "int", "float", "double", "long", "while", "do", "id"};
+            sum=8,  rest=9, mult=10, div=11, igual=12, igualdad=13, intx=14, floatx=15, doublex=16, longx=17, whilex = 18, dox = 19, repeatx= 20, untilx= 21, id=22;
+    private final String [] reservadas = {"if", "then", "else", "begin", "end", "print", ";", "+", "-", "*", "/", "=", "==", "int", "float", "double", "long", "while", "do",  "repeat", "until", "id"};
     private int tknCode, tokenEsperado;
     private String token, tokenActual, log;
     
@@ -135,6 +135,15 @@ public class Parser {
             case beginx:
                 eat(beginx);    S();    L();
                 return null;
+
+            case repeatx:
+                Expx e3;
+                Statx s4;
+                eat(repeatx);
+                s4 = S();
+                eat(untilx);
+                e3 = E();
+                return new Repeatx(s4, e3);
                 
             case id:
                 Idx i;
@@ -147,7 +156,7 @@ public class Parser {
                 eat(printx);    ex=E();
                 return new Printx(ex);
                 
-            default: error(token, "(if | begin | id | print)");
+            default: error(token, "(if | begin | id | print | while)");
                 return null;
         }
     }
@@ -278,8 +287,10 @@ public class Parser {
             case "long": codigo=17; break; //Se agrega el tipo long
             case "while": codigo=18; break; //Nueva palabra reservada while
             case "do": codigo=19; break; //Nueva palabra reservada do
+            case "repeat": codigo=20; break; //Nueva palabra reservada repeat
+            case "until": codigo=21; break; //Nueva palabra reservada until
 
-            default: codigo=20; break;
+            default: codigo=22; break;
         }
         return codigo;
     }
