@@ -41,6 +41,7 @@ public class Parser {
         token = s.getToken(true);
         tknCode = stringToCode(token);
         p = P();
+        System.out.println(getBytecode());
     }
     
     //INICIO DE ANÁLISIS SINTÁCTICO
@@ -112,25 +113,59 @@ public class Parser {
     
     public Statx S() { //return statement
         switch(tknCode) {
-            case ifx:
+           case ifx:
                 Expx e1;
                 Statx s1, s2;
                 eat(ifx);
-                e1= E();
+                e1 = E();
+
+                if (e1 instanceof Comparax c) {
+                    if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
+                    String var1 = ((Idx) c.s1).getName();
+                    String var2 = ((Idx) c.s2).getName();
+                    byteCodeControl("if", var1, var2);
+                }
+
+                }
+
                 eat(thenx);
-                s1=S();
+                s1 = S();
+
+                int labelEnd = cntBC + 2;
+                ipbc(cntIns + ": goto L" + labelEnd);
+                ipbc("L" + cntBC + ":");
+
                 eat(elsex);
-                s2=S();                
+                s2 = S();
+
+                ipbc("L" + labelEnd + ":");
                 return new Ifx(e1, s1, s2);
+
                 
             case whilex:
                 Expx e2;
                 Statx s3;
                 eat(whilex);
+
+                int start = cntBC;
+                ipbc("L" + start + ":");
+
                 e2 = E();
+                if (e2 instanceof Comparax c) {
+                if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
+                    String var1 = ((Idx) c.s1).getName();
+                    String var2 = ((Idx) c.s2).getName();
+                    byteCodeControl("while_start", var1, var2);
+                }
+            }
+
+
                 eat(dox);
-                s3 = S();          
+                s3 = S();
+
+                byteCodeControl("while_end", null, null);
                 return new Whilex(e2, s3);
+
 
             case beginx:
                 eat(beginx);    S();    L();
@@ -140,10 +175,25 @@ public class Parser {
                 Expx e3;
                 Statx s4;
                 eat(repeatx);
+
+                int startRepeat = cntBC;
+                ipbc("L" + startRepeat + ":");
+
                 s4 = S();
+
                 eat(untilx);
                 e3 = E();
+                if (e3 instanceof Comparax c) {
+                if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
+                    String var1 = ((Idx) c.s1).getName();
+                    String var2 = ((Idx) c.s2).getName();
+                    byteCodeControl("repeat_end", var1, var2);
+                }
+            }
+
+
                 return new Repeatx(s4, e3);
+
                 
             case id:
                 Idx i;
@@ -457,6 +507,56 @@ public class Parser {
         }
     }
     
+    public void byteCodeControl(String tipo, String var1, String var2) {
+    int pos1 = getVarPos(var1);
+    int pos2 = getVarPos(var2);
+
+    switch (tipo) {
+        case "if":
+            ipbc(cntIns + ": iload_" + pos1);
+            ipbc(cntIns + ": iload_" + pos2);
+            ipbc(cntIns + ": if_icmpne L" + (cntBC + 4)); // Salto a else
+            break;
+
+        case "while_start":
+            ipbc("L" + cntBC + ":");
+            ipbc(cntIns + ": iload_" + pos1);
+            ipbc(cntIns + ": iload_" + pos2);
+            ipbc(cntIns + ": if_icmpne L" + (cntBC + 4)); // Salto fuera del while
+            break;
+
+        case "while_end":
+            ipbc(cntIns + ": goto L" + getLoopStart());
+            ipbc("L" + cntBC + ":");
+            break;
+
+        case "repeat_end":
+            ipbc(cntIns + ": iload_" + pos1);
+            ipbc(cntIns + ": iload_" + pos2);
+            ipbc(cntIns + ": if_icmpne L" + getLoopStart());
+            break;
+        }
+    }
+
+    public int getVarPos(String name) {
+    for (int i = 0; i < variable.length; i++) {
+        if (variable[i].equals(name)) return i;
+        }
+    return -1;
+    }
+
+    public int getLoopStart() {
+    for (int i = cntBC - 1; i >= 0; i--) {
+        if (pilaBC[i] != null && pilaBC[i].startsWith("L")) {
+            return Integer.parseInt(pilaBC[i].substring(1, pilaBC[i].indexOf(":")));
+            }
+        }
+    return 0;
+    }
+
+
+
+
     public void ipbc(String ins) {
         while(pilaBC[cntBC] != null) {
             cntBC++;
