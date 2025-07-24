@@ -161,29 +161,24 @@ public class Parser {
 
                 e2 = E();
                 String var1 = null, var2 = null;
-                boolean esComparacion = false;
+
                 if (e2 instanceof Comparax c) {
                     if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
                         var1 = ((Idx) c.s1).getName();
                         var2 = ((Idx) c.s2).getName();
                         byteCodeControl("while_start", var1, var2);
-                        esComparacion = true;
+
                     }
                 } else if (e2 instanceof Divx || e2 instanceof Multx || e2 instanceof Sumax || e2 instanceof Restax) {
-                    // Si es una operación aritmética, compara contra 0
-                    ipbc(cntIns + ": ifeq L" + labelEnd); // Salta fuera del while si el resultado es 0
+
+                    ipbc(cntIns + ": ifeq L" + labelEnd);
                 }
 
                 eat(dox);
                 s3 = S();
 
-                // Solo llama a byteCodeControl si es comparación
-                if (esComparacion) {
-                    byteCodeControl("while_end", var1, var2);
-                } else {
-                    ipbc(cntIns + ": goto L" + start);
-                    ipbc("L" + labelEnd + ":");
-                }
+                byteCodeControl("while_end", var1, var2);
+
                 return new Whilex(e2, s3);
 
             case beginx:
@@ -211,7 +206,6 @@ public class Parser {
                         byteCodeControl("repeat_end", var1, var2);
                     }
                 } else if (e3 instanceof Divx || e3 instanceof Multx || e3 instanceof Sumax || e3 instanceof Restax) {
-                    // Si es una operación aritmética, compara contra 0
                     ipbc(cntIns + ": ifne L" + startRepeat);
                 }
                 return new Repeatx(s4, e3);
@@ -219,13 +213,13 @@ public class Parser {
             case id:
                 Idx i;
                 Expx e;
-                String varName = token; // Guarda el nombre de la variable
+                String varName = token;
                 eat(id);
                 i = new Idx(varName);
                 declarationCheck(varName);
                 eat(igual);
                 e = E();
-                // Aquí, después de evaluar la expresión, el resultado está en la pila
+
                 byteCode("igual", varName);
                 return new Asignax(i, e);
 
@@ -233,7 +227,6 @@ public class Parser {
                 Expx ex;
                 eat(printx);
                 ex = E();
-                // Siempre imprime el resultado de la expresión, esté en la pila
                 ipbc(cntIns + ": invokestatic java/io/PrintStream/println(I)V");
                 cntIns++;
                 return new Printx(ex);
@@ -589,12 +582,6 @@ public class Parser {
                 ipbc(cntIns + ": istore_" + pos1);
                 cntIns++;
                 jmp2 = cntBC;
-                break;
-            case "print":
-                // Imprime el valor de la variable
-                ipbc(cntIns + ": iload_" + pos1);
-                ipbc(cntIns + ": invokestatic java/io/PrintStream/println(I)V");
-                cntIns += 2;
                 break;
         }
     }
