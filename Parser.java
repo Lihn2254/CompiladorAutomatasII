@@ -134,9 +134,7 @@ public class Parser {
                     if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
                         String var1 = ((Idx) c.s1).getName();
                         String var2 = ((Idx) c.s2).getName();
-                        ipbc(cntIns + ": iload_" + getVarPos(var1));
-                        ipbc(cntIns + ": iload_" + getVarPos(var2));
-                        ipbc(cntIns + ": if_icmpne L" + labelElse);
+                        byteCodeControl("if", var1, var2);
                     }
                 }
 
@@ -168,9 +166,7 @@ public class Parser {
                     if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
                         var1 = ((Idx) c.s1).getName();
                         var2 = ((Idx) c.s2).getName();
-                        ipbc(cntIns + ": iload_" + getVarPos(var1));
-                        ipbc(cntIns + ": iload_" + getVarPos(var2));
-                        ipbc(cntIns + ": if_icmpne L" + labelEnd);
+                        byteCodeControl("while_start", var1, var2);
                         esComparacion = true;
                     }
                 } else if (e2 instanceof Divx || e2 instanceof Multx || e2 instanceof Sumax || e2 instanceof Restax) {
@@ -183,8 +179,7 @@ public class Parser {
 
                 // Solo llama a byteCodeControl si es comparación
                 if (esComparacion) {
-                    ipbc(cntIns + ": goto L" + start);
-                    ipbc("L" + labelEnd + ":");
+                    byteCodeControl("while_end", var1, var2);
                 } else {
                     ipbc(cntIns + ": goto L" + start);
                     ipbc("L" + labelEnd + ":");
@@ -213,9 +208,7 @@ public class Parser {
                     if (c.s1 instanceof Idx && c.s2 instanceof Idx) {
                         var1 = ((Idx) c.s1).getName();
                         var2 = ((Idx) c.s2).getName();
-                        ipbc(cntIns + ": iload_" + getVarPos(var1));
-                        ipbc(cntIns + ": iload_" + getVarPos(var2));
-                        ipbc(cntIns + ": if_icmpne L" + startRepeat);
+                        byteCodeControl("repeat_end", var1, var2);
                     }
                 } else if (e3 instanceof Divx || e3 instanceof Multx || e3 instanceof Sumax || e3 instanceof Restax) {
                     // Si es una operación aritmética, compara contra 0
